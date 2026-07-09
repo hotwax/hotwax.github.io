@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title | default: site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="shortcut icon" href="{{ '/assets/favicon.png' | relative_url }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --hw-orange: #f15c27;
+      --hw-orange-dark: #d94d1a;
+      --hw-red: #ec2227;
+      --hw-text: #444444;
+      --hw-heading: #333333;
+      --hw-muted: #666666;
+      --hw-border: #e4e4e7;
+      --hw-bg-soft: #f5f5f7;
+      --hw-footer: #202124;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+      font-size: 16px; line-height: 1.6; color: var(--hw-text); background: #fff;
+    }
+    a { color: var(--hw-orange); text-decoration: none; }
+    a:hover { color: var(--hw-orange-dark); text-decoration: underline; }
+    h1, h2, h3 { color: var(--hw-heading); line-height: 1.3; }
+    h1 { font-size: 1.9em; font-weight: 700; margin: 0 0 0.5em; }
+    h2 { font-size: 1.4em; font-weight: 600; margin: 1.8em 0 0.6em; }
+    p { margin: 0 0 1em; }
+    ul { margin: 0 0 1em 1.4em; }
+
+    .hw-header {
+      background: #fff; border-bottom: 1px solid var(--hw-border);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .hw-header-inner {
+      max-width: 1080px; margin: 0 auto; padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .hw-logo img { height: 42px; width: auto; display: block; }
+    .hw-nav { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+    .hw-nav a { color: var(--hw-heading); font-weight: 600; font-size: 0.92em; }
+    .hw-nav a:hover { color: var(--hw-orange); text-decoration: none; }
+    .hw-nav .hw-cta {
+      background: var(--hw-orange); color: #fff; padding: 8px 18px; border-radius: 4px;
+    }
+    .hw-nav .hw-cta:hover { background: var(--hw-orange-dark); color: #fff; }
+
+    .hw-hero {
+      background: linear-gradient(135deg, #fff7f3 0%, #fdeee6 100%);
+      border-bottom: 1px solid var(--hw-border);
+    }
+    .hw-hero-inner { max-width: 1080px; margin: 0 auto; padding: 40px 24px 32px; }
+    .hw-hero h1 { margin-bottom: 0.3em; }
+    .hw-hero .hw-tagline { color: var(--hw-muted); font-size: 1.05em; max-width: 760px; margin: 0; }
+
+    .hw-main { max-width: 1080px; margin: 0 auto; padding: 28px 24px 56px; }
+
+    .hw-footer { background: var(--hw-footer); color: #c9c9ce; margin-top: 40px; }
+    .hw-footer-inner {
+      max-width: 1080px; margin: 0 auto; padding: 32px 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+    }
+    .hw-footer img { height: 34px; width: auto; display: block; }
+    .hw-footer a { color: #e8e8ec; font-size: 0.92em; }
+    .hw-footer a:hover { color: var(--hw-orange); text-decoration: none; }
+    .hw-footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+    .hw-footer-copy { font-size: 0.85em; color: #8b8b92; width: 100%; margin-top: 4px; }
+
+    @media (max-width: 640px) {
+      .hw-header-inner { flex-direction: column; align-items: flex-start; }
+      .hw-hero-inner { padding: 28px 20px 24px; }
+      .hw-main { padding: 20px 20px 40px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hw-header">
+    <div class="hw-header-inner">
+      <a class="hw-logo" href="{{ '/' | relative_url }}">
+        <img src="{{ '/assets/hotwax-logo.png' | relative_url }}" alt="HotWax Commerce">
+      </a>
+      <nav class="hw-nav">
+        <a href="https://github.com/hotwax">GitHub</a>
+        <a href="https://docs.hotwax.co">Documentation</a>
+        <a class="hw-cta" href="https://www.hotwax.co">hotwax.co</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hw-hero">
+    <div class="hw-hero-inner">
+      <h1>{{ page.heading | default: page.title | default: site.title }}</h1>
+      <p class="hw-tagline">{{ page.tagline | default: site.description }}</p>
+    </div>
+  </section>
+
+  <main class="hw-main">
+    {{ content }}
+  </main>
+
+  <footer class="hw-footer">
+    <div class="hw-footer-inner">
+      <a href="https://www.hotwax.co">
+        <img src="{{ '/assets/hotwax-logo-dark.png' | relative_url }}" alt="HotWax Commerce">
+      </a>
+      <div class="hw-footer-links">
+        <a href="https://github.com/hotwax">GitHub</a>
+        <a href="https://docs.hotwax.co">Documentation</a>
+        <a href="https://www.hotwax.co/about-us">About Us</a>
+        <a href="https://www.hotwax.co/contact-us">Contact</a>
+      </div>
+      <p class="hw-footer-copy">&copy; HotWax Commerce. Omnichannel Order Management for Retailers.</p>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,44 +1,48 @@
 ---
 layout: default
-title: HotWax Commerce Open Source
-description: A collection of the open source projects by HotWax
+title: HotWax Commerce | Open Source Projects
+heading: Open Source Projects
+tagline: >-
+  HotWax Commerce builds an omnichannel Order Management System for retailers —
+  powering Buy Online Pick-Up In Store, Ship From Store, and Pre-Orders.
+  Explore our open source repositories, fetched live from GitHub.
 ---
 
-<p>
-  <a href="https://www.hotwax.co">HotWax Commerce</a> builds an omnichannel Order
-  Management System (OMS) for retailers. This page lists our open source
-  repositories, fetched live from GitHub and organized by where they run.
-</p>
-
 <style>
-  .repo-auth { background: #f6f6f6; border: 1px solid #ddd; border-radius: 6px; padding: 10px 14px; margin: 1em 0; font-size: 0.95em; }
-  .repo-auth button { appearance: none; border: 1px solid #bbb; border-radius: 4px; background: #fff; padding: 4px 10px; cursor: pointer; font-size: 0.95em; }
-  .repo-auth button:hover { background: #eee; }
-  .repo-auth input { width: 320px; max-width: 100%; padding: 4px 8px; border: 1px solid #bbb; border-radius: 4px; font-family: monospace; }
-  .repo-auth .auth-help { color: #666; font-size: 0.9em; margin: 6px 0 0; }
-  .repo-auth .auth-error { color: #b33; margin: 6px 0 0; }
-  .repo-tabs { display: flex; gap: 4px; border-bottom: 2px solid #bbb; margin: 1.5em 0 0; flex-wrap: wrap; }
-  .repo-tab {
-    appearance: none; background: #eee; border: 1px solid #ccc; border-bottom: none;
-    border-radius: 6px 6px 0 0; padding: 10px 18px; font-size: 1em; cursor: pointer;
-    color: #444; margin-bottom: -2px;
+  .repo-auth { background: var(--hw-bg-soft, #f5f5f7); border: 1px solid var(--hw-border, #e4e4e7); border-radius: 6px; padding: 12px 16px; margin: 0 0 1.2em; font-size: 0.92em; }
+  .repo-auth button {
+    appearance: none; border: 1px solid var(--hw-orange, #f15c27); border-radius: 4px;
+    background: #fff; color: var(--hw-orange, #f15c27); font-weight: 600;
+    padding: 5px 14px; cursor: pointer; font-size: 0.92em; font-family: inherit;
   }
-  .repo-tab:hover { background: #e0e0e0; }
+  .repo-auth button:hover { background: var(--hw-orange, #f15c27); color: #fff; }
+  .repo-auth input { width: 320px; max-width: 100%; padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; }
+  .repo-auth .auth-help { color: var(--hw-muted, #666); font-size: 0.9em; margin: 8px 0 0; }
+  .repo-auth .auth-error { color: var(--hw-red, #ec2227); margin: 8px 0 0; }
+  .repo-tabs { display: flex; gap: 6px; border-bottom: 2px solid var(--hw-border, #e4e4e7); margin: 1.2em 0 0; flex-wrap: wrap; }
+  .repo-tab {
+    appearance: none; background: none; border: none; border-bottom: 3px solid transparent;
+    padding: 10px 18px 8px; font-size: 1em; cursor: pointer; font-family: inherit;
+    color: var(--hw-muted, #666); font-weight: 500; margin-bottom: -2px;
+  }
+  .repo-tab:hover { color: var(--hw-orange, #f15c27); }
   .repo-tab.active {
-    background: #fff; color: #111; font-weight: bold;
-    border-color: #bbb; border-bottom: 2px solid #fff;
+    color: var(--hw-heading, #333); font-weight: 700;
+    border-bottom-color: var(--hw-orange, #f15c27);
   }
   .repo-panel { display: none; padding-top: 0.5em; }
   .repo-panel.active { display: block; }
-  .repo-intro { color: #555; margin: 1em 0; }
-  .repo-table { width: 100%; border-collapse: collapse; margin: 1em 0; }
-  .repo-table th, .repo-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #ddd; vertical-align: top; }
-  .repo-table th { border-bottom: 2px solid #bbb; }
-  .repo-lang { white-space: nowrap; color: #666; font-size: 0.9em; }
+  .repo-intro { color: var(--hw-muted, #666); margin: 1em 0; }
+  .repo-table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 0.95em; }
+  .repo-table th, .repo-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--hw-border, #e4e4e7); vertical-align: top; }
+  .repo-table th { color: var(--hw-heading, #333); border-bottom: 2px solid var(--hw-orange, #f15c27); }
+  .repo-table tbody tr:hover { background: var(--hw-bg-soft, #f5f5f7); }
+  .repo-table td a { font-weight: 600; }
+  .repo-lang { white-space: nowrap; color: var(--hw-muted, #666); font-size: 0.9em; }
   .repo-stars { white-space: nowrap; }
-  .repo-private-badge { background: #fff3cd; border: 1px solid #e0c96b; border-radius: 10px; padding: 1px 8px; font-size: 0.75em; color: #7a6014; white-space: nowrap; }
+  .repo-private-badge { background: #fdeee6; border: 1px solid var(--hw-orange, #f15c27); border-radius: 10px; padding: 1px 8px; font-size: 0.75em; color: var(--hw-orange-dark, #d94d1a); white-space: nowrap; }
   .repo-status { color: #888; font-style: italic; }
-  .repo-error { color: #b33; }
+  .repo-error { color: var(--hw-red, #ec2227); }
 </style>
 
 <div id="repo-auth" class="repo-auth"></div>
