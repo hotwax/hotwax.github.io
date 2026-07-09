@@ -1,14 +1,19 @@
 # hotwax.github.io
 
-Source for [hotwax.github.io](https://hotwax.github.io) — a catalog of HotWax Commerce open source projects, organized into **App Side** (Ionic/Vue PWAs and UI libraries) and **Server Side** (Moqui/OFBiz backend services and integrations).
+Source for [hotwax.github.io](https://hotwax.github.io) — a catalog of HotWax Commerce open source projects, organized into **App Side** and **Server Side**.
 
 The site is built with [Jekyll](https://jekyllrb.com/) via GitHub Pages using the Slate theme. The repository list on the homepage is **fetched dynamically** from the GitHub API (`/orgs/hotwax/repos`) in the browser, so new repositories appear automatically — no site changes needed when a repo is created, renamed, or archived.
 
 ## How categorization works
 
-Logic lives in [`index.html`](index.html):
+Repos are grouped by their primary language (logic in [`index.html`](index.html)):
 
-1. The `OVERRIDES` map pins specific repos to a category (`app`, `server`, or `other`). Use this for repos the language heuristic would misplace — e.g. Shopify/NetSuite integrations written in JavaScript belong to Server Side.
-2. Any repo not in the map falls back to its primary language: Groovy/Java/FreeMarker/Dockerfile → Server Side; Vue/TypeScript/JavaScript → App Side; everything else → Documentation & Tooling.
+- **Server Side** — Groovy, Java, FreeMarker
+- **App Side** — Vue, TypeScript, JavaScript (Ionic apps)
+- **Other** — everything else (docs, themes, etc.)
 
-To recategorize a repo, add or edit its entry in `OVERRIDES` and push to `main` — GitHub Pages rebuilds automatically.
+Archived repos are hidden and forks are labeled.
+
+## Private repositories
+
+Visitors see public repos by default. Signing in with a GitHub personal access token (stored only in the browser's localStorage, sent only to api.github.com) also lists the private repos that user can access, marked with a `private` badge.

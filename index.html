@@ -11,6 +11,12 @@ description: A collection of the open source projects by HotWax
 </p>
 
 <style>
+  .repo-auth { background: #f6f6f6; border: 1px solid #ddd; border-radius: 6px; padding: 10px 14px; margin: 1em 0; font-size: 0.95em; }
+  .repo-auth button { appearance: none; border: 1px solid #bbb; border-radius: 4px; background: #fff; padding: 4px 10px; cursor: pointer; font-size: 0.95em; }
+  .repo-auth button:hover { background: #eee; }
+  .repo-auth input { width: 320px; max-width: 100%; padding: 4px 8px; border: 1px solid #bbb; border-radius: 4px; font-family: monospace; }
+  .repo-auth .auth-help { color: #666; font-size: 0.9em; margin: 6px 0 0; }
+  .repo-auth .auth-error { color: #b33; margin: 6px 0 0; }
   .repo-tabs { display: flex; gap: 4px; border-bottom: 2px solid #bbb; margin: 1.5em 0 0; flex-wrap: wrap; }
   .repo-tab {
     appearance: none; background: #eee; border: 1px solid #ccc; border-bottom: none;
@@ -30,9 +36,12 @@ description: A collection of the open source projects by HotWax
   .repo-table th { border-bottom: 2px solid #bbb; }
   .repo-lang { white-space: nowrap; color: #666; font-size: 0.9em; }
   .repo-stars { white-space: nowrap; }
+  .repo-private-badge { background: #fff3cd; border: 1px solid #e0c96b; border-radius: 10px; padding: 1px 8px; font-size: 0.75em; color: #7a6014; white-space: nowrap; }
   .repo-status { color: #888; font-style: italic; }
   .repo-error { color: #b33; }
 </style>
+
+<div id="repo-auth" class="repo-auth"></div>
 
 <div id="repo-list">
   <p class="repo-status">Loading repositories from GitHub&hellip;</p>
@@ -52,77 +61,43 @@ description: A collection of the open source projects by HotWax
 <script>
 (function () {
   var ORG = 'hotwax';
+  var TOKEN_KEY = 'hotwax-github-token';
 
   var TABS = [
     { id: 'app', title: 'App Side',
-      intro: 'Client-facing apps and UI libraries — Progressive Web Apps built with Ionic ' +
-             'and Vue.js, plus the shared components and SDKs they use.' },
+      intro: 'Repositories written in Vue, TypeScript, or JavaScript — Ionic-based ' +
+             'Progressive Web Apps, UI libraries, and client-side tooling.' },
     { id: 'server', title: 'Server Side',
-      intro: 'Backend framework, services, and system integrations powering the HotWax ' +
-             'Commerce OMS — Moqui framework components, OFBiz tools, and connectors for ' +
-             'Shopify, NetSuite, and more.' },
-    { id: 'other', title: 'Documentation &amp; Tooling',
-      intro: 'Documentation, tutorials, test automation, and other supporting repositories.' }
+      intro: 'Repositories written in Groovy, Java, or FreeMarker — Moqui framework ' +
+             'components, backend services, and server-side integrations.' },
+    { id: 'other', title: 'Other',
+      intro: 'Everything else — documentation, themes, and supporting repositories.' }
   ];
 
-  // Known repos that the language heuristic would misplace.
-  var OVERRIDES = {
-    // Server side: integrations and backend services written in JS/TS/Vue
-    'shopify-preorder-app': 'server',
-    'shopify-bopis': 'server',
-    'shopify-hc-oms-app': 'server',
-    'shopify-app-bridge': 'server',
-    'shopify-admin-helper': 'server',
-    'shopify-store-mode': 'server',
-    'shopify-extensions': 'server',
-    'netsuite-integration': 'server',
-    'loop-netsuite-connector': 'server',
-    'loop-netsuite': 'server',
-    'mantle-shiphawk': 'server',
-    'api-adapter': 'server',
-    'ofbiz-graphql': 'server',
-    'oms-bi': 'server',
-    'analytics': 'server',
-    'report-builder': 'server',
-    // App side: libraries and SDKs used by the apps
-    'oms-api': 'app',
-    'dxp-components': 'app',
-    'app-components': 'app',
-    'app-version-info': 'app',
-    'app-installer': 'app',
-    'hotwax-apps-theme': 'app',
-    'devkit': 'app',
-    // Neither apps nor server code
-    'oms-documentation': 'other',
-    'dxp-knowledgebase': 'other',
-    'moqui-tutorial': 'other',
-    'product-updates': 'other',
-    'press-release-faq': 'other',
-    'playwright-automation': 'other',
-    'playwright-ofbiz': 'other',
-    'git-workshop': 'other',
-    'training-assignment': 'other',
-    'hacktoberfest': 'other',
-    'site-theme': 'other',
-    'sangam': 'other',
-    'omnichannelcto-site': 'other',
-    'hotwax-commerce-website': 'other',
-    'hotwax.github.io': 'other'
-  };
-
-  var SERVER_LANGUAGES = { Groovy: 1, Java: 1, FreeMarker: 1, Dockerfile: 1 };
+  // Categorization is purely by the repo's primary language:
+  // Groovy/Java/FreeMarker run on the server; Vue/TypeScript/JavaScript are Ionic apps.
+  var SERVER_LANGUAGES = { Groovy: 1, Java: 1, FreeMarker: 1 };
   var APP_LANGUAGES = { Vue: 1, TypeScript: 1, JavaScript: 1 };
 
+  function getToken() { return localStorage.getItem(TOKEN_KEY); }
+
+  function ghFetch(url) {
+    var headers = { 'Accept': 'application/vnd.github+json' };
+    var token = getToken();
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    return fetch(url, { headers: headers });
+  }
+
   function categorize(repo) {
-    if (OVERRIDES.hasOwnProperty(repo.name)) return OVERRIDES[repo.name];
     if (repo.language in SERVER_LANGUAGES) return 'server';
     if (repo.language in APP_LANGUAGES) return 'app';
     return 'other';
   }
 
   function fetchAllRepos(page, acc) {
-    var url = 'https://api.github.com/orgs/' + ORG + '/repos?per_page=100&sort=full_name&page=' + page;
-    return fetch(url).then(function (res) {
+    // With a token, type=all also returns private repos the signed-in user can access.
+    var url = 'https://api.github.com/orgs/' + ORG + '/repos?type=all&per_page=100&sort=full_name&page=' + page;
+    return ghFetch(url).then(function (res) {
       if (!res.ok) throw new Error('GitHub API returned ' + res.status);
       return res.json();
     }).then(function (repos) {
@@ -138,10 +113,69 @@ description: A collection of the open source projects by HotWax
     return div.innerHTML;
   }
 
+  // ---- Auth bar ----------------------------------------------------------
+
+  function renderAuthBar(state) {
+    var el = document.getElementById('repo-auth');
+    if (state.user) {
+      el.innerHTML = 'Signed in as <strong>' + esc(state.user) + '</strong> — private repositories you can access are included. ' +
+        '<button type="button" id="auth-signout">Sign out</button>';
+      document.getElementById('auth-signout').addEventListener('click', function () {
+        localStorage.removeItem(TOKEN_KEY);
+        location.reload();
+      });
+    } else if (state.form) {
+      el.innerHTML =
+        '<label for="auth-token">GitHub personal access token:</label> ' +
+        '<input type="password" id="auth-token" placeholder="github_pat_&hellip;" autocomplete="off"> ' +
+        '<button type="button" id="auth-save">Sign in</button> ' +
+        '<button type="button" id="auth-cancel">Cancel</button>' +
+        '<p class="auth-help">Create a <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">fine-grained token</a> ' +
+        'with read-only <em>Metadata</em> access to the ' + ORG + ' organization. The token is stored only in this browser (localStorage) ' +
+        'and sent only to api.github.com.</p>' +
+        (state.error ? '<p class="auth-error">' + esc(state.error) + '</p>' : '');
+      document.getElementById('auth-save').addEventListener('click', submitToken);
+      document.getElementById('auth-token').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') submitToken();
+      });
+      document.getElementById('auth-cancel').addEventListener('click', function () {
+        renderAuthBar({ signedOut: true });
+      });
+      document.getElementById('auth-token').focus();
+    } else {
+      el.innerHTML = 'Viewing <strong>public</strong> repositories' +
+        (state.error ? ' <span class="auth-error">(' + esc(state.error) + ')</span>' : '') + '. ' +
+        '<button type="button" id="auth-signin">Sign in</button> with a GitHub token to include private ones.';
+      document.getElementById('auth-signin').addEventListener('click', function () {
+        renderAuthBar({ form: true });
+      });
+    }
+  }
+
+  function submitToken() {
+    var token = document.getElementById('auth-token').value.trim();
+    if (!token) return;
+    fetch('https://api.github.com/user', {
+      headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + token }
+    }).then(function (res) {
+      if (!res.ok) throw new Error(res.status === 401 ? 'That token was rejected by GitHub (401).' : 'GitHub API returned ' + res.status);
+      return res.json();
+    }).then(function (user) {
+      localStorage.setItem(TOKEN_KEY, token);
+      renderAuthBar({ user: user.login });
+      loadRepos(user.login);
+    }).catch(function (err) {
+      renderAuthBar({ form: true, error: err.message });
+    });
+  }
+
+  // ---- Repo tabs ---------------------------------------------------------
+
   function renderTable(repos) {
     var rows = repos.map(function (r) {
       return '<tr>' +
         '<td><a href="' + esc(r.html_url) + '">' + esc(r.name) + '</a>' +
+        (r.private ? ' <span class="repo-private-badge">private</span>' : '') +
         (r.fork ? ' <small>(fork)</small>' : '') + '</td>' +
         '<td>' + esc(r.description || '') + '</td>' +
         '<td class="repo-lang">' + esc(r.language || '') + '</td>' +
@@ -188,18 +222,43 @@ description: A collection of the open source projects by HotWax
     selectTab(TABS.some(function (t) { return t.id === initial; }) ? initial : TABS[0].id);
   }
 
-  fetchAllRepos(1, []).then(function (repos) {
-    var active = repos.filter(function (r) { return !r.archived; });
-    active.sort(function (a, b) { return a.name.localeCompare(b.name); });
-
-    var groups = { app: [], server: [], other: [] };
-    active.forEach(function (r) { groups[categorize(r)].push(r); });
-
-    render(groups);
-  }).catch(function (err) {
+  function loadRepos() {
     document.getElementById('repo-list').innerHTML =
-      '<p class="repo-error">Could not load repositories from GitHub (' + esc(err.message) + '). ' +
-      'You can browse them directly at <a href="https://github.com/orgs/hotwax/repositories">github.com/orgs/hotwax/repositories</a>.</p>';
-  });
+      '<p class="repo-status">Loading repositories from GitHub&hellip;</p>';
+    fetchAllRepos(1, []).then(function (repos) {
+      var active = repos.filter(function (r) { return !r.archived; });
+      active.sort(function (a, b) { return a.name.localeCompare(b.name); });
+
+      var groups = { app: [], server: [], other: [] };
+      active.forEach(function (r) { groups[categorize(r)].push(r); });
+
+      render(groups);
+    }).catch(function (err) {
+      document.getElementById('repo-list').innerHTML =
+        '<p class="repo-error">Could not load repositories from GitHub (' + esc(err.message) + '). ' +
+        'You can browse them directly at <a href="https://github.com/orgs/hotwax/repositories">github.com/orgs/hotwax/repositories</a>.</p>';
+    });
+  }
+
+  // ---- Init --------------------------------------------------------------
+
+  var token = getToken();
+  if (token) {
+    ghFetch('https://api.github.com/user').then(function (res) {
+      if (!res.ok) throw new Error('stored token rejected');
+      return res.json();
+    }).then(function (user) {
+      renderAuthBar({ user: user.login });
+      loadRepos();
+    }).catch(function () {
+      // Stored token expired or was revoked — drop it and fall back to public.
+      localStorage.removeItem(TOKEN_KEY);
+      renderAuthBar({ signedOut: true, error: 'your saved token expired, signed out' });
+      loadRepos();
+    });
+  } else {
+    renderAuthBar({ signedOut: true });
+    loadRepos();
+  }
 })();
 </script>
