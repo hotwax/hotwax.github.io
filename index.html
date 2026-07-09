@@ -11,7 +11,20 @@ description: A collection of the open source projects by HotWax
 </p>
 
 <style>
-  .repo-section h2 { margin-top: 2em; }
+  .repo-tabs { display: flex; gap: 4px; border-bottom: 2px solid #bbb; margin: 1.5em 0 0; flex-wrap: wrap; }
+  .repo-tab {
+    appearance: none; background: #eee; border: 1px solid #ccc; border-bottom: none;
+    border-radius: 6px 6px 0 0; padding: 10px 18px; font-size: 1em; cursor: pointer;
+    color: #444; margin-bottom: -2px;
+  }
+  .repo-tab:hover { background: #e0e0e0; }
+  .repo-tab.active {
+    background: #fff; color: #111; font-weight: bold;
+    border-color: #bbb; border-bottom: 2px solid #fff;
+  }
+  .repo-panel { display: none; padding-top: 0.5em; }
+  .repo-panel.active { display: block; }
+  .repo-intro { color: #555; margin: 1em 0; }
   .repo-table { width: 100%; border-collapse: collapse; margin: 1em 0; }
   .repo-table th, .repo-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #ddd; vertical-align: top; }
   .repo-table th { border-bottom: 2px solid #bbb; }
@@ -39,6 +52,18 @@ description: A collection of the open source projects by HotWax
 <script>
 (function () {
   var ORG = 'hotwax';
+
+  var TABS = [
+    { id: 'app', title: 'App Side',
+      intro: 'Client-facing apps and UI libraries — Progressive Web Apps built with Ionic ' +
+             'and Vue.js, plus the shared components and SDKs they use.' },
+    { id: 'server', title: 'Server Side',
+      intro: 'Backend framework, services, and system integrations powering the HotWax ' +
+             'Commerce OMS — Moqui framework components, OFBiz tools, and connectors for ' +
+             'Shopify, NetSuite, and more.' },
+    { id: 'other', title: 'Documentation &amp; Tooling',
+      intro: 'Documentation, tutorials, test automation, and other supporting repositories.' }
+  ];
 
   // Known repos that the language heuristic would misplace.
   var OVERRIDES = {
@@ -128,10 +153,39 @@ description: A collection of the open source projects by HotWax
       '<tbody>' + rows + '</tbody></table>';
   }
 
-  function renderSection(title, intro, repos) {
-    if (!repos.length) return '';
-    return '<div class="repo-section"><h2>' + title + ' (' + repos.length + ')</h2>' +
-      '<p>' + intro + '</p>' + renderTable(repos) + '</div>';
+  function selectTab(id) {
+    TABS.forEach(function (tab) {
+      document.getElementById('tab-' + tab.id).classList.toggle('active', tab.id === id);
+      document.getElementById('panel-' + tab.id).classList.toggle('active', tab.id === id);
+    });
+  }
+
+  function render(groups) {
+    var buttons = TABS.map(function (tab) {
+      return '<button type="button" class="repo-tab" id="tab-' + tab.id + '" ' +
+        'role="tab" aria-controls="panel-' + tab.id + '">' +
+        tab.title + ' (' + groups[tab.id].length + ')</button>';
+    }).join('');
+
+    var panels = TABS.map(function (tab) {
+      return '<div class="repo-panel" id="panel-' + tab.id + '" role="tabpanel">' +
+        '<p class="repo-intro">' + tab.intro + '</p>' +
+        renderTable(groups[tab.id]) + '</div>';
+    }).join('');
+
+    var container = document.getElementById('repo-list');
+    container.innerHTML = '<div class="repo-tabs" role="tablist">' + buttons + '</div>' + panels;
+
+    TABS.forEach(function (tab) {
+      document.getElementById('tab-' + tab.id).addEventListener('click', function () {
+        selectTab(tab.id);
+        if (history.replaceState) history.replaceState(null, '', '#' + tab.id);
+      });
+    });
+
+    // Honor a #app / #server / #other deep link; default to the first tab.
+    var initial = location.hash.replace('#', '');
+    selectTab(TABS.some(function (t) { return t.id === initial; }) ? initial : TABS[0].id);
   }
 
   fetchAllRepos(1, []).then(function (repos) {
@@ -141,14 +195,7 @@ description: A collection of the open source projects by HotWax
     var groups = { app: [], server: [], other: [] };
     active.forEach(function (r) { groups[categorize(r)].push(r); });
 
-    document.getElementById('repo-list').innerHTML =
-      renderSection('App Side', 'Client-facing apps and UI libraries — Progressive Web Apps ' +
-        'built with Ionic and Vue.js, plus the shared components and SDKs they use.', groups.app) +
-      renderSection('Server Side', 'Backend framework, services, and system integrations powering ' +
-        'the HotWax Commerce OMS — Moqui framework components, OFBiz tools, and connectors ' +
-        'for Shopify, NetSuite, and more.', groups.server) +
-      renderSection('Documentation &amp; Tooling', 'Documentation, tutorials, test automation, ' +
-        'and other supporting repositories.', groups.other);
+    render(groups);
   }).catch(function (err) {
     document.getElementById('repo-list').innerHTML =
       '<p class="repo-error">Could not load repositories from GitHub (' + esc(err.message) + '). ' +
