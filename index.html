@@ -1,0 +1,158 @@
+---
+layout: default
+title: HotWax Commerce Open Source
+description: A collection of the open source projects by HotWax
+---
+
+<p>
+  <a href="https://www.hotwax.co">HotWax Commerce</a> builds an omnichannel Order
+  Management System (OMS) for retailers. This page lists our open source
+  repositories, fetched live from GitHub and organized by where they run.
+</p>
+
+<style>
+  .repo-section h2 { margin-top: 2em; }
+  .repo-table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+  .repo-table th, .repo-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #ddd; vertical-align: top; }
+  .repo-table th { border-bottom: 2px solid #bbb; }
+  .repo-lang { white-space: nowrap; color: #666; font-size: 0.9em; }
+  .repo-stars { white-space: nowrap; }
+  .repo-status { color: #888; font-style: italic; }
+  .repo-error { color: #b33; }
+</style>
+
+<div id="repo-list">
+  <p class="repo-status">Loading repositories from GitHub&hellip;</p>
+</div>
+
+<h2>Contributing</h2>
+<p>
+  All projects welcome contributions. Fork the repository you're interested in,
+  create a branch, and open a pull request. Found a bug or have an idea? Open an
+  issue on the relevant repository.
+</p>
+<ul>
+  <li>GitHub: <a href="https://github.com/hotwax">github.com/hotwax</a></li>
+  <li>Website: <a href="https://www.hotwax.co">hotwax.co</a></li>
+</ul>
+
+<script>
+(function () {
+  var ORG = 'hotwax';
+
+  // Known repos that the language heuristic would misplace.
+  var OVERRIDES = {
+    // Server side: integrations and backend services written in JS/TS/Vue
+    'shopify-preorder-app': 'server',
+    'shopify-bopis': 'server',
+    'shopify-hc-oms-app': 'server',
+    'shopify-app-bridge': 'server',
+    'shopify-admin-helper': 'server',
+    'shopify-store-mode': 'server',
+    'shopify-extensions': 'server',
+    'netsuite-integration': 'server',
+    'loop-netsuite-connector': 'server',
+    'loop-netsuite': 'server',
+    'mantle-shiphawk': 'server',
+    'api-adapter': 'server',
+    'ofbiz-graphql': 'server',
+    'oms-bi': 'server',
+    'analytics': 'server',
+    'report-builder': 'server',
+    // App side: libraries and SDKs used by the apps
+    'oms-api': 'app',
+    'dxp-components': 'app',
+    'app-components': 'app',
+    'app-version-info': 'app',
+    'app-installer': 'app',
+    'hotwax-apps-theme': 'app',
+    'devkit': 'app',
+    // Neither apps nor server code
+    'oms-documentation': 'other',
+    'dxp-knowledgebase': 'other',
+    'moqui-tutorial': 'other',
+    'product-updates': 'other',
+    'press-release-faq': 'other',
+    'playwright-automation': 'other',
+    'playwright-ofbiz': 'other',
+    'git-workshop': 'other',
+    'training-assignment': 'other',
+    'hacktoberfest': 'other',
+    'site-theme': 'other',
+    'sangam': 'other',
+    'omnichannelcto-site': 'other',
+    'hotwax-commerce-website': 'other',
+    'hotwax.github.io': 'other'
+  };
+
+  var SERVER_LANGUAGES = { Groovy: 1, Java: 1, FreeMarker: 1, Dockerfile: 1 };
+  var APP_LANGUAGES = { Vue: 1, TypeScript: 1, JavaScript: 1 };
+
+  function categorize(repo) {
+    if (OVERRIDES.hasOwnProperty(repo.name)) return OVERRIDES[repo.name];
+    if (repo.language in SERVER_LANGUAGES) return 'server';
+    if (repo.language in APP_LANGUAGES) return 'app';
+    return 'other';
+  }
+
+  function fetchAllRepos(page, acc) {
+    var url = 'https://api.github.com/orgs/' + ORG + '/repos?per_page=100&sort=full_name&page=' + page;
+    return fetch(url).then(function (res) {
+      if (!res.ok) throw new Error('GitHub API returned ' + res.status);
+      return res.json();
+    }).then(function (repos) {
+      acc = acc.concat(repos);
+      if (repos.length === 100) return fetchAllRepos(page + 1, acc);
+      return acc;
+    });
+  }
+
+  function esc(text) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+  }
+
+  function renderTable(repos) {
+    var rows = repos.map(function (r) {
+      return '<tr>' +
+        '<td><a href="' + esc(r.html_url) + '">' + esc(r.name) + '</a>' +
+        (r.fork ? ' <small>(fork)</small>' : '') + '</td>' +
+        '<td>' + esc(r.description || '') + '</td>' +
+        '<td class="repo-lang">' + esc(r.language || '') + '</td>' +
+        '<td class="repo-stars">&#9733; ' + r.stargazers_count + '</td>' +
+        '</tr>';
+    }).join('');
+    return '<table class="repo-table">' +
+      '<thead><tr><th>Repository</th><th>Description</th><th>Language</th><th>Stars</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>';
+  }
+
+  function renderSection(title, intro, repos) {
+    if (!repos.length) return '';
+    return '<div class="repo-section"><h2>' + title + ' (' + repos.length + ')</h2>' +
+      '<p>' + intro + '</p>' + renderTable(repos) + '</div>';
+  }
+
+  fetchAllRepos(1, []).then(function (repos) {
+    var active = repos.filter(function (r) { return !r.archived; });
+    active.sort(function (a, b) { return a.name.localeCompare(b.name); });
+
+    var groups = { app: [], server: [], other: [] };
+    active.forEach(function (r) { groups[categorize(r)].push(r); });
+
+    document.getElementById('repo-list').innerHTML =
+      renderSection('App Side', 'Client-facing apps and UI libraries — Progressive Web Apps ' +
+        'built with Ionic and Vue.js, plus the shared components and SDKs they use.', groups.app) +
+      renderSection('Server Side', 'Backend framework, services, and system integrations powering ' +
+        'the HotWax Commerce OMS — Moqui framework components, OFBiz tools, and connectors ' +
+        'for Shopify, NetSuite, and more.', groups.server) +
+      renderSection('Documentation &amp; Tooling', 'Documentation, tutorials, test automation, ' +
+        'and other supporting repositories.', groups.other);
+  }).catch(function (err) {
+    document.getElementById('repo-list').innerHTML =
+      '<p class="repo-error">Could not load repositories from GitHub (' + esc(err.message) + '). ' +
+      'You can browse them directly at <a href="https://github.com/orgs/hotwax/repositories">github.com/orgs/hotwax/repositories</a>.</p>';
+  });
+})();
+</script>
