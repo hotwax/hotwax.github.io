@@ -12,8 +12,4 @@ Repos are grouped by their primary language (logic in [`index.html`](index.html)
 - **App Side** — Vue, TypeScript, JavaScript (Ionic apps)
 - **Other** — everything else (docs, themes, etc.)
 
-Archived repos are hidden and forks are labeled.
-
-## Private repositories
-
-Visitors see public repos by default. Signing in with a GitHub personal access token (stored only in the browser's localStorage, sent only to api.github.com) also lists the private repos that user can access, marked with a `private` badge.
+Archived repos are hidden and forks are labeled. Only public repositories are listed — the page calls the GitHub API unauthenticated.
